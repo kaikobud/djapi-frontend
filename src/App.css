@@ -1,0 +1,27 @@
+.App {
+  text-align: center;
+}
+.login_form .login-form {
+  /* max-width: 600px; */
+}
+.login_form .login-form-forgot {
+  float: right;
+}
+.login_form .ant-col-rtl .login-form-forgot {
+  float: left;
+}
+.login_form .login-form-button {
+  width: 100%;
+}
+
+.loading_screen {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  margin-bottom: 20px;
+  padding: 30px 50px;
+  margin: 20px 0;
+}
+.fav_icon {
+  color: red;
+}
