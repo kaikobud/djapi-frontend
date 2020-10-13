@@ -1,13 +1,9 @@
 import React, { Component } from 'react';
 
-import { Form, Input, Button, Space, Typography, Spin, message, Result } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Row, Col } from 'antd';
+import { Typography, Spin, message, Result } from 'antd';
+import { Row, Col, Button } from 'antd';
 import authService from '../Services/authService';
-import { Link } from 'react-router-dom';
-import queryString, { parse } from 'query-string';
-
-const { Text } = Typography;
+import queryString from 'query-string';
 
 class VerifyEmail extends Component {
     constructor(props) {
@@ -16,6 +12,11 @@ class VerifyEmail extends Component {
             loading: false,
             isEmailVerified: false
         }
+        this.home = this.home.bind(this)
+    }
+
+    home() {
+        this.props.history.push('/home')
     }
 
     componentDidMount() {
@@ -46,7 +47,7 @@ class VerifyEmail extends Component {
 
     render() { 
         return (
-            <div className="login_form">
+            <div className="login_form" style={{ padding: 24, minHeight: 480, paddingTop: 100 }}>
                 {this.state.loading ? (
                     <div className="loading_screen">
                         <Spin />
@@ -58,6 +59,11 @@ class VerifyEmail extends Component {
                                 status="success"
                                 title="Successfully Verified Email!"
                                 subTitle="Your email is verified"
+                                extra={[
+                                    <Button type="primary" onClick={this.home}>
+                                        Back to Home
+                                    </Button>
+                                ]}
                             />
                         </Col>
                     </Row>

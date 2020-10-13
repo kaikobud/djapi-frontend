@@ -2,10 +2,15 @@ import React, { Component } from "react";
 import { Table, Space, Input, Button, Switch } from 'antd';
 import { HeartTwoTone, HeartFilled } from '@ant-design/icons';
 import axios from 'axios';
-import { Link } from "react-router-dom";
 
 import authHeader from '../Services/authHeader';
 import authService from '../Services/authService';
+
+import { Layout, Menu } from 'antd';
+
+import { Link } from "react-router-dom";
+
+const { Header, Content } = Layout;
 
 const { Search } = Input;
 
@@ -22,9 +27,11 @@ export default class HomePage extends Component {
         loading: false,
         fav_companies: [],
         fav_id: 0,
-        isEmailVerified: false,
         favCheck: false, 
-        isDisable: false
+        isDisable: false,
+        currrentUser: undefined,
+        currentUserEmail: undefined,
+        is_verified: false
     };
 
     this.search = this.search.bind(this);
@@ -71,7 +78,6 @@ export default class HomePage extends Component {
           <Space size="middle">
             {favoutite ? (
             <Button shape="circle" icon={<HeartFilled className="fav_icon" onClick={() => this.update_favourite_list(key['key'])} />} />
-            // <a href="javascript:;" onClick={() => this.update_favourite_list(key['key'])} style={{ marginRight: 8, }} > like </a>
             ): (
             <Button shape="circle" icon={<HeartTwoTone twoToneColor="#eb2f96" onClick={() => this.update_favourite_list(key['key'])} />} />
             )}
@@ -200,22 +206,17 @@ export default class HomePage extends Component {
   }
 
   getFavouriteOnly(){
-    console.log(this.state.favCheck)
-
     let userObj = authService.getCurrentUser()
     
     if (!this.state.favCheck) {
       axios.get(API_URL + 'search_page/?q=' + this.state.query + '&user_id=' + userObj.user.pk , { headers: authHeader() }).then(res => {
         let data = res.data;
-
         let temp = data.filter(function(o) { return o.favourite !== 0; })
-
         this.setState({
             companies: temp,
             favCheck: true
         })
       })
-
     } else {
       axios.get(API_URL + 'search_page/?q=' + this.state.query + '&user_id=' + userObj.user.pk , { headers: authHeader() }).then(res => {
         let data = res.data;
@@ -230,71 +231,116 @@ export default class HomePage extends Component {
 
 
   componentDidMount() {
-    let userObj = authService.getCurrentUser()
-    let isEmailVerified = authService.getIsEmailVerified();
-
-    console.log(isEmailVerified)
-    this.setState({
-      isEmailVerified: isEmailVerified
-    })
-
-    if(isEmailVerified) {
-      axios.get(API_URL + 'search_page/?q=' + '' + '&user_id=' + userObj.user.pk , { headers: authHeader() }).then(res => {
-        let data = res.data;
-        this.setState({
-            companies: data
-        })
+    const user = authService.getCurrentUser();
+    if(user) {
+      this.setState({
+        currrentUser: user,
+        currentUserEmail: user.user.email
       })
-  
-      axios.get(API_URL + 'favourite/', { headers: authHeader() }).then(res => {
-        let data = res.data;
-  
-        if(data.length) {
-          console.log("Here")
-          this.setState({
-            fav_companies: data[0].company,
-            fav_id: data[0].id
-          })
-        } else {
-          console.log("Here 2")
-          this.setState({
-            fav_companies: [],
-          })
-        }
-        
-      })
-    } else {
-      this.props.history.push("/verify_emailNotice");
+      this.props.history.push('/')
     }
 
+    authService.isEmailVerified(user.user.email).then( is_verified => {
+      this.setState({
+        is_verified: is_verified
+      })
+      
+      if(is_verified) {
+        axios.get(API_URL + 'search_page/?q=' + '' + '&user_id=' + user.user.pk , { headers: authHeader() }).then(res => {
+          let data = res.data;
+          this.setState({
+              companies: data,
+              is_verified: is_verified
+          })
+        })
+    
+        axios.get(API_URL + 'favourite/', { headers: authHeader() }).then(res => {
+          let data = res.data;
+    
+          if(data.length) {
+            this.setState({
+              fav_companies: data[0].company,
+              fav_id: data[0].id
+            })
+          } else {
+            this.setState({
+              fav_companies: [],
+            })
+          }
+          
+        })
+      } else {
+        this.props.history.push("/verify_emailNotice");
+      }
+
+    } )
     
   }
 
   render() {
       return (
-        <div className="login_form">
-          <div className="">
-              <Search
-                  placeholder="Type to Search"
-                  autoFocus={true}
-                  enterButton="Search"
-                  size="large"
-                  onChange={e => this.search(e)}
-              />
-              <br/>
-              <br/>
-              <Space align="center" style={{ marginBottom: 16 }}>
-              {/* <Switch
-                checkedChildren={<CheckOutlined />}
-                unCheckedChildren={<CloseOutlined />}
-                defaultChecked
-              /> */}
-                My Favourite: <Switch checked={this.state.favCheck} disabled={this.state.isDisable} onChange={this.getFavouriteOnly} />
-              </Space>
-              <br/>
-              <Table columns={this.columns} dataSource={this.state.companies} />
+        <>
+          <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
+            <div className="logo" />
+            <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']}>
+
+              {this.state.currrentUser ? (
+                  <>
+                    <Menu.Item key="2">
+                      <Link to={"/home"} className="nav-link">
+                        Home
+                      </Link>
+                    </Menu.Item>
+                    <Menu.Item key="1">
+                      <Link to={"/login"} className="nav-link" onClick={this.logOut}>
+                        Logout
+                      </Link>
+                    </Menu.Item>
+                    <Menu.Item key="10">
+                      {this.state.currentUserEmail} (Verified: {this.state.is_verified.toString()} )
+                    </Menu.Item>
+                  </>
+                  
+                ) : (
+                  <>
+                    <Menu.Item key="3">
+                      <Link to={"/login"} className="nav-link">
+                        Login
+                      </Link>
+                    </Menu.Item>
+                    <Menu.Item key="4">
+                      <Link to={"/register"} className="nav-link">
+                        Sign Up
+                      </Link>
+                    </Menu.Item>
+                  </>
+                )}
+
+            </Menu>
+          </Header>
+          <Content className="site-layout" style={{ padding: '0 50px', marginTop: 64 }}>
+            <div className="site-layout-background" style={{ padding: 24, minHeight: 480 }}>
+              <div className="login_form">
+                <div className="">
+                    <Search
+                        placeholder="Type to Search"
+                        autoFocus={true}
+                        enterButton="Search"
+                        size="large"
+                        onChange={e => this.search(e)}
+                    />
+                    <br/>
+                    <br/>
+                    <Space align="center" style={{ marginBottom: 16 }}>
+                      My Favourite: <Switch checked={this.state.favCheck} disabled={this.state.isDisable} onChange={this.getFavouriteOnly} />
+                    </Space>
+                    <br/>
+                    <Table columns={this.columns} dataSource={this.state.companies} />
+                  </div>
+              </div>
             </div>
-        </div>
+          </Content>
+        </>
     );
   }
 }

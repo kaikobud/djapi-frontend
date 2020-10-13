@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import { Form, Input, Button, Space, Typography, Spin, message } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LockOutlined } from '@ant-design/icons';
 import { Row, Col } from 'antd';
 import authService from '../Services/authService';
 import { Link } from 'react-router-dom';
@@ -31,7 +31,6 @@ class PasswordReset extends Component {
                 this.setState({
                     loading: false,
                 })
-                console.log(res)
                 if(res.hasOwnProperty('detail')) {
                     this.props.history.push('/');
                     message.success("Password reset successful, Please login")
@@ -71,7 +70,7 @@ class PasswordReset extends Component {
 
     render() { 
         return (
-            <div className="login_form">
+            <div className="login_form" style={{ padding: 24, minHeight: 480, paddingTop: 100 }}>
                 {this.state.loading ? (
                     <div className="loading_screen">
                         <Spin />

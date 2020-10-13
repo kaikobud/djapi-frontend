@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 
+import { Link } from "react-router-dom";
+
 import { Form, Input, Button, Space, Typography, Spin, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Row, Col } from 'antd';
 import authService from '../Services/authService';
-
-import { Link } from "react-router-dom";
 
 const { Text } = Typography;
 
@@ -16,6 +16,7 @@ class LoginPage extends Component {
             message: "",
             message_type: "default",
             loading: false,
+            currentUser: undefined
         }
     }
 
@@ -28,9 +29,13 @@ class LoginPage extends Component {
             (res) => {
                 this.setState({
                     loading: false,
+                    
                 })
                 if(res.access_token) {
-                    this.props.history.push("/");
+                    this.setState({
+                        currentUser: res
+                    })
+                    this.props.history.push("/home");
                 } else {
                     let error_obj = res.data;
                     Object.keys(error_obj).forEach(function (item) {
@@ -48,6 +53,7 @@ class LoginPage extends Component {
             }
         );
     };
+    
 
     onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
@@ -55,7 +61,7 @@ class LoginPage extends Component {
 
     render() { 
         return (
-            <div className="login_form">
+            <div className="login_form" style={{ padding: 24, minHeight: 480, paddingTop: 100 }}>
                 {this.state.loading ? (
                     <div className="loading_screen">
                         <Spin />

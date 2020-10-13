@@ -13,8 +13,6 @@ class AuthService {
         if (response.data.access_token) {
           localStorage.setItem("user", JSON.stringify(response.data));
         }
-        this.isEmailVerified(response.data.user.email)
-
         return response.data;
       }).catch(function (error) {
         return error.response
@@ -25,11 +23,10 @@ class AuthService {
     return axios
       .get(API_URL + "is_email_verified/" + email + '/')
       .then(response => {
-        console.log(response.data[0])
-        if (response) {
-          localStorage.setItem("email_verify", response.data[0].is_verified);
+        if (response.data[0].is_verified) {
+          return true
         } else {
-          localStorage.setItem("email_verify", false);
+          return false
         }
       })
   }
@@ -53,10 +50,7 @@ class AuthService {
   }
 
   getCurrentUser() {
-    return JSON.parse(localStorage.getItem('user'));;
-  }
-  getIsEmailVerified() {
-    return localStorage.getItem('email_verify');;
+    return JSON.parse(localStorage.getItem('user'));
   }
 
   resetPassword(email) {

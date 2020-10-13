@@ -56,7 +56,7 @@ class SignUpPage extends Component {
 
     render() { 
         return (
-            <div className="login_form">
+            <div className="login_form" style={{ padding: 24, minHeight: 480, paddingTop: 100 }}>
                 {this.state.loading ? (
                     <div className="loading_screen">
                         <Spin />
